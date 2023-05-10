@@ -244,6 +244,11 @@ class BreakdownSceneOperations(HookBaseClass):
     def unregister_scene_change_callback(self):
         """Unregister the scene change callbacks by disconnecting any signals."""
 
+        event_watcher = self.parent.engine.event_watcher
+        if not event_watcher:
+            # Event watcher has already shutdown
+            return
+
         # Unregister the event callbacks from the engine's event watcher
         for callback, events in self.__alias_event_callbacks:
             self.parent.engine.event_watcher.unregister_alias_callback(callback, events)
@@ -261,7 +266,13 @@ class BreakdownSceneOperations(HookBaseClass):
         :type scene_change_callback: function
         """
 
-        if event_result.message_type == alias_api.AlMessageType.ReferenceFileDeleted:
+        print(alias_api.AlMessageType.ReferenceFileDeleted.value)
+        print(event_result.message_type)
+        print(event_result.message_type.value)
+        if (
+            event_result.message_type.value
+            == alias_api.AlMessageType.ReferenceFileDeleted.value
+        ):
             # Remove the reference from the model by its path.
             scene_change_callback(
                 event_type="remove",
@@ -270,7 +281,8 @@ class BreakdownSceneOperations(HookBaseClass):
 
         elif (
             hasattr(alias_api.AlMessageType, "ReferenceFileAdded")
-            and event_result.message_type == alias_api.AlMessageType.ReferenceFileAdded
+            and event_result.message_type.value
+            == alias_api.AlMessageType.ReferenceFileAdded.value
         ):
             # Add the new reference to the model
             file_item_data = {
